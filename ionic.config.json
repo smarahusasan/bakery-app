@@ -1,0 +1,7 @@
+{
+  "name": "bakeryApp",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
