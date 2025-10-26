@@ -1,18 +1,31 @@
-import {getLogger} from "../core";
-import React, {useCallback, useState} from "react";
+import React, { useCallback, useEffect, useState } from 'react';
+import { getLogger } from '../core';
+import { login as loginApi } from './authApi';
 
-const log=getLogger("AuthProvider");
+const log = getLogger('AuthProvider');
 
-type LoginFn = () => Promise<void>;
+type LoginFn = (username?: string, password?: string) => void;
+type LogoutFn = ()=>void;
 
 export interface AuthState {
-    isAuthenticated: boolean,
-    login?: LoginFn,
+    authenticationError: Error | null;
+    isAuthenticated: boolean;
+    isAuthenticating: boolean;
+    login?: LoginFn;
+    logout?: LogoutFn;
+    pendingAuthentication?: boolean;
+    username?: string;
+    password?: string;
+    token: string;
 }
 
 const initialState: AuthState = {
     isAuthenticated: false,
-}
+    isAuthenticating: false,
+    authenticationError: null,
+    pendingAuthentication: false,
+    token: '',
+};
 
 export const AuthContext = React.createContext<AuthState>(initialState);
 
@@ -20,10 +33,14 @@ interface AuthProviderProps {
     children: React.ReactNode;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({children})=>{
-    const [{isAuthenticated},setAuthenticated]=useState<AuthState>(initialState);
-    const login=useCallback<LoginFn>(loginCallback,[]);
-    const value={isAuthenticated,login};
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+    const [state, setState] = useState<AuthState>(initialState);
+    const { isAuthenticated, isAuthenticating, authenticationError, pendingAuthentication, token } = state;
+    const login = useCallback<LoginFn>(loginCallback, []);
+    const logout = useCallback<LogoutFn>(logoutCallback,[]);
+    useEffect(checkStoredTokenEffect, []);
+    useEffect(authenticationEffect, [pendingAuthentication]);
+    const value = { isAuthenticated, login,logout, isAuthenticating, authenticationError, token };
     log('render');
     return (
         <AuthContext.Provider value={value}>
@@ -31,9 +48,80 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children})=>{
         </AuthContext.Provider>
     );
 
-    function loginCallback():Promise<void>{
+    function loginCallback(username?: string, password?: string): void {
         log('login');
-        setAuthenticated({isAuthenticated:true});
-        return Promise.resolve();
+        setState(prev => ({
+            ...prev,
+            pendingAuthentication: true,
+            username,
+            password
+        }));
+    }
+
+    function logoutCallback(): void {
+        log('logout');
+        localStorage.removeItem('token');
+        setState({
+            ...initialState
+        });
+    }
+
+    function authenticationEffect() {
+        let canceled = false;
+        authenticate();
+        return () => {
+            canceled = true;
+        }
+
+        async function authenticate() {
+            if (!pendingAuthentication) {
+                log('authenticate, !pendingAuthentication, return');
+                return;
+            }
+            try {
+                log('authenticate...');
+                setState({
+                    ...state,
+                    isAuthenticating: true,
+                });
+                const { username, password } = state;
+                const { token } = await loginApi(username, password);
+                if (canceled) {
+                    return;
+                }
+                log('authenticate succeeded');
+                localStorage.setItem('token', token);
+                setState({
+                    ...state,
+                    token,
+                    pendingAuthentication: false,
+                    isAuthenticated: true,
+                    isAuthenticating: false,
+                });
+            } catch (error) {
+                if (canceled) {
+                    return;
+                }
+                log('authenticate failed');
+                setState({
+                    ...state,
+                    authenticationError: error as Error,
+                    pendingAuthentication: false,
+                    isAuthenticating: false,
+                });
+            }
+        }
+    }
+
+    function checkStoredTokenEffect() {
+        const savedToken = localStorage.getItem('token');
+        if (savedToken) {
+            log('Found token in localStorage, auto login');
+            setState({
+                ...state,
+                token: savedToken,
+                isAuthenticated: true,
+            })
+        }
     }
 };

@@ -15,6 +15,8 @@ import { add } from 'ionicons/icons';
 import Item from './Item';
 import { getLogger } from '../core';
 import { ItemContext } from './ItemProvider';
+import {NetworkStatus} from "../components/NetworkStatus";
+import {LogoutButton} from "../components/LogoutButton";
 
 const log = getLogger('ItemList');
 
@@ -39,6 +41,8 @@ const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
         {fetchingError && (
           <div>{fetchingError.message || 'Failed to fetch items'}</div>
         )}
+        <LogoutButton/>
+        <NetworkStatus/>
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => history.push('/item')}>
             <IonIcon icon={add} />

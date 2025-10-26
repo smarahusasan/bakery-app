@@ -49,7 +49,7 @@ const App: React.FC = () => (
                         <PrivateRoute component={ItemEdit} path="/item" exact={true}/>
                         <PrivateRoute component={ItemEdit} path="/item/:id" exact={true}/>
                     </ItemProvider>
-                    <Route exact path={"/"} render={()=><Redirect to="/items"/>}/>
+                    <Route exact path={"/"} render={()=><Redirect to="/login"/>}/>
                 </AuthProvider>
             </IonRouterOutlet>
         </IonReactRouter>

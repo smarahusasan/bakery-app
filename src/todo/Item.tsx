@@ -12,7 +12,7 @@ const Item: React.FC<ItemPropsExt> = ({ id, name,price,dateOfProduction,isGluten
             <IonLabel>{id}</IonLabel>
             <IonLabel>{name}</IonLabel>
             <IonLabel>{price}</IonLabel>
-            <IonLabel>{dateOfProduction.toString()}</IonLabel>
+            <IonLabel>{dateOfProduction ? dateOfProduction.toString() : ''}</IonLabel>
             <IonLabel>{isGlutenFree}</IonLabel>
         </IonItem>
     );
