@@ -23,6 +23,7 @@ const log = getLogger('ItemList');
 const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
   const { items, fetching, fetchingError } = useContext(ItemContext);
   log('render');
+  log('Log si mai nou:',items);
   return (
     <IonPage>
       <IonHeader>
@@ -34,8 +35,27 @@ const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
         <IonLoading isOpen={fetching} message="Fetching items" />
         {items && (
             <IonList>
-              {items.map(({ id,name,price,dateOfProduction,isGlutenFree}) =>
-                  <Item key={id} id={id} name={name} price={price} dateOfProduction={dateOfProduction} isGlutenFree={isGlutenFree} onEdit={id => history.push(`/item/${id}`)} />)}
+              {items.map(item => {
+                const {
+                  id,
+                  name,
+                  price,
+                  date_of_production,
+                  is_gluten_free
+                } = item;
+
+                return (
+                    <Item
+                        key={id}
+                        id={id}
+                        name={name}
+                        price={price}
+                        date_of_production={date_of_production}
+                        is_gluten_free={is_gluten_free}
+                        onEdit={id => history.push(`/item/${id}`)}
+                    />
+                );
+              })}
             </IonList>
         )}
         {fetchingError && (

@@ -2,6 +2,6 @@ export interface ItemProps {
   id?: string;
   name:string;
   price:number;
-  dateOfProduction:Date;
-  isGlutenFree:boolean;
+  date_of_production:Date;
+  is_gluten_free:boolean;
 }

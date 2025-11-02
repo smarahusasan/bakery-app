@@ -36,12 +36,16 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [state, setState] = useState<AuthState>(initialState);
     const { isAuthenticated, isAuthenticating, authenticationError, pendingAuthentication, token } = state;
+
     const login = useCallback<LoginFn>(loginCallback, []);
     const logout = useCallback<LogoutFn>(logoutCallback,[]);
+
     useEffect(checkStoredTokenEffect, []);
     useEffect(authenticationEffect, [pendingAuthentication]);
+
     const value = { isAuthenticated, login,logout, isAuthenticating, authenticationError, token };
     log('render');
+
     return (
         <AuthContext.Provider value={value}>
             {children}
@@ -61,9 +65,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     function logoutCallback(): void {
         log('logout');
         localStorage.removeItem('token');
-        setState({
-            ...initialState
-        });
+        setState(initialState);
     }
 
     function authenticationEffect() {
@@ -80,10 +82,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             }
             try {
                 log('authenticate...');
-                setState({
-                    ...state,
+                setState(prev => ({
+                    ...prev,
                     isAuthenticating: true,
-                });
+                }));
                 const { username, password } = state;
                 const { token } = await loginApi(username, password);
                 if (canceled) {
@@ -91,24 +93,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 }
                 log('authenticate succeeded');
                 localStorage.setItem('token', token);
-                setState({
-                    ...state,
+                setState(prev => ({
+                    ...prev,
                     token,
                     pendingAuthentication: false,
                     isAuthenticated: true,
                     isAuthenticating: false,
-                });
+                    authenticationError: null,
+                }));
             } catch (error) {
                 if (canceled) {
                     return;
                 }
                 log('authenticate failed');
-                setState({
-                    ...state,
+                setState(prev => ({
+                    ...prev,
                     authenticationError: error as Error,
                     pendingAuthentication: false,
                     isAuthenticating: false,
-                });
+                }));
             }
         }
     }

@@ -2,9 +2,9 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
   IonButton,
   IonButtons,
-  IonContent,
+  IonContent, IonDatetime,
   IonHeader,
-  IonInput,
+  IonInput, IonItem, IonLabel,
   IonLoading,
   IonPage,
   IonTitle, IonToggle,
@@ -31,17 +31,21 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
   useEffect(() => {
     log('useEffect');
     const routeId = match.params.id || '';
-    const item = items?.find(it => it.id === routeId);
+    if(!items)
+      return;
+    const item = items?.find(it => it.id == routeId);
     setItem(item);
     if (item) {
       setName(item.name);
       setPrice(item.price);
-      setDateOfProduction(new Date(item.dateOfProduction));
-      setIsGlutenFree(item.isGlutenFree);
+      setDateOfProduction(new Date(item.date_of_production));
+      console.log(dateOfProduction);
+      setIsGlutenFree(item.is_gluten_free);
     }
   }, [match.params.id, items]);
   const handleSave = useCallback(() => {
-    const editedItem = item ? { ...item, name,price,dateOfProduction,isGlutenFree } : { name, price,dateOfProduction,isGlutenFree };
+    console.log("INAINTE DE SALVARE: ", dateOfProduction);
+    const editedItem = item ? { ...item, name,price,date_of_production: dateOfProduction, is_gluten_free: isGlutenFree } : { name, price,date_of_production: dateOfProduction, is_gluten_free: isGlutenFree };
     if (saveItem) {
       saveItem(editedItem)
           .then(() => {
@@ -75,14 +79,14 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
             value={price}
             onIonChange={e => setPrice(parseInt(e.detail.value ?? '0'))}
         />
-        <IonInput
-            type="date"
-            value={dateOfProduction ? dateOfProduction.toISOString().split('T')[0]: ''} // shows YYYY-MM-DD
-            onIonChange={e => {
-              const value = e.detail.value;
-              if (value) setDateOfProduction(new Date(value));
-            }}
-        />
+        <IonItem>
+          <IonLabel position="stacked">Data</IonLabel>
+          <IonDatetime
+              value={dateOfProduction.toISOString()}
+              onIonChange={(e) => setDateOfProduction(new Date(e.detail.value as string))}
+              presentation="date"
+          />
+        </IonItem>
         <IonToggle
             checked={isGlutenFree}
             onIonChange={e => setIsGlutenFree(e.detail.checked)}

@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useReducer } from 'react';
+import React, {useCallback, useContext, useEffect, useReducer} from 'react';
 import { getLogger } from '../core';
 import { ItemProps } from './ItemProps';
 import { createItem, getItems, newWebSocket, updateItem } from './itemApi';
+import {AuthContext} from "../auth";
 
 const log = getLogger('ItemProvider');
 
@@ -77,7 +78,8 @@ interface ItemProviderProps {
 export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { items, fetching, fetchingError, saving, savingError } = state;
-  useEffect(getItemsEffect, []);
+  const { token } = useContext(AuthContext);
+  useEffect(getItemsEffect, [token]);
   useEffect(wsEffect, []);
   const saveItem = useCallback<SaveItemFn>(saveItemCallback, []);
   const value = { items, fetching, fetchingError, saving, savingError, saveItem };
@@ -116,6 +118,7 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
   async function saveItemCallback(item: ItemProps) {
     try {
       log('saveItem started');
+      console.log("SALVAM ITEM: ", item);
       dispatch({ type: SAVE_ITEM_STARTED });
       const savedItem = await (item.id ? updateItem(item) : createItem(item));
       log('saveItem succeeded');

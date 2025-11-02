@@ -28,9 +28,9 @@ export const config={
     }
 }
 
-export const authConfig=(token?:string)=>({
+export const authConfig=()=>({
     headers:{
         'Content-Type':'application/json',
-        Authorization:`Bearer ${token}`
+        Authorization:`Bearer ${localStorage.getItem('token')}`
     }
 });

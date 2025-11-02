@@ -6,18 +6,17 @@ const log = getLogger('itemApi');
 
 const itemUrl = `http://localhost:3000/item`;
 
-const token = localStorage.getItem('token') || '';
-
 export const getItems: () => Promise<ItemProps[]> = () => {
-  return withLogs(axios.get(itemUrl, authConfig(token)), 'getItems');
+  return withLogs(axios.get(itemUrl, authConfig()), 'getItems');
 }
 
 export const createItem: (item: ItemProps) => Promise<ItemProps[]> = item => {
-  return withLogs(axios.post(itemUrl, item, authConfig(token)), 'createItem');
+  return withLogs(axios.post(itemUrl, item, authConfig()), 'createItem');
 }
 
 export const updateItem: (item: ItemProps) => Promise<ItemProps[]> = item => {
-  return withLogs(axios.put(`${itemUrl}/${item.id}`, item, authConfig(token)), 'updateItem');
+  console.log("Acum salvez",item);
+  return withLogs(axios.put(`${itemUrl}/${item.id}`, item, authConfig()), 'updateItem');
 }
 
 interface MessageData {
