@@ -1,22 +1,48 @@
 import axios from 'axios';
 import {authConfig, getLogger, withLogs} from '../core';
 import { ItemProps } from './ItemProps';
+import {BackendItemProps} from "./BackendItemProps";
 
 const log = getLogger('itemApi');
 
 const itemUrl = `http://localhost:3000/item`;
 
-export const getItems: () => Promise<ItemProps[]> = () => {
-  return withLogs(axios.get(itemUrl, authConfig()), 'getItems');
+const parseItem = (item: BackendItemProps): ItemProps=>({
+  id: item.id ? item.id : undefined,
+  name: item.name,
+  price: item.price,
+  dateOfProduction: new Date(item.date_of_production),
+  isGlutenFree: item.is_gluten_free,
+});
+
+export const getItems: () => Promise<ItemProps[]> = async () => {
+  return await withLogs(
+      axios.get(itemUrl, authConfig()).then((res)=>{
+        res.data=res.data.map(parseItem)
+        return res;
+      }),
+      'getItems'
+  );
 }
 
-export const createItem: (item: ItemProps) => Promise<ItemProps[]> = item => {
-  return withLogs(axios.post(itemUrl, item, authConfig()), 'createItem');
+export const createItem: (item: ItemProps) => Promise<ItemProps>= async (item:ItemProps) => {
+  return await withLogs(
+      axios.post(itemUrl, item,authConfig()).then((res)=>{
+        res.data=parseItem(res.data);
+        return res;
+      }),
+      'createItem'
+  );
 }
 
-export const updateItem: (item: ItemProps) => Promise<ItemProps[]> = item => {
-  console.log("Acum salvez",item);
-  return withLogs(axios.put(`${itemUrl}/${item.id}`, item, authConfig()), 'updateItem');
+export const updateItem: (item: ItemProps) => Promise<ItemProps>=async (item:ItemProps) => {
+  return await withLogs(
+      axios.put(`${itemUrl}/${item.id}`, item,authConfig()).then((res)=>{
+        res.data=parseItem(res.data);
+        return res;
+      }),
+      'updateItem'
+  );
 }
 
 interface MessageData {
@@ -38,8 +64,9 @@ export const newWebSocket = (onMessage: (data: MessageData) => void) => {
     log('web socket onerror', error);
   };
   ws.onmessage = messageEvent => {
-    log('web socket onmessage');
-    onMessage(JSON.parse(messageEvent.data));
+    const data = JSON.parse(messageEvent.data);
+    data.payload.item = parseItem(data.payload.item);
+    onMessage(data);
   };
   return () => {
     ws.close();

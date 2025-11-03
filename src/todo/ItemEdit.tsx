@@ -38,14 +38,14 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
     if (item) {
       setName(item.name);
       setPrice(item.price);
-      setDateOfProduction(new Date(item.date_of_production));
+      setDateOfProduction(new Date(item.dateOfProduction));
       console.log(dateOfProduction);
-      setIsGlutenFree(item.is_gluten_free);
+      setIsGlutenFree(item.isGlutenFree);
     }
   }, [match.params.id, items]);
   const handleSave = useCallback(() => {
     console.log("INAINTE DE SALVARE: ", dateOfProduction);
-    const editedItem = item ? { ...item, name,price,date_of_production: dateOfProduction, is_gluten_free: isGlutenFree } : { name, price,date_of_production: dateOfProduction, is_gluten_free: isGlutenFree };
+    const editedItem = item ? { ...item, name,price,dateOfProduction ,isGlutenFree } : { name, price,dateOfProduction,isGlutenFree };
     if (saveItem) {
       saveItem(editedItem)
           .then(() => {
@@ -79,14 +79,11 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
             value={price}
             onIonChange={e => setPrice(parseInt(e.detail.value ?? '0'))}
         />
-        <IonItem>
-          <IonLabel position="stacked">Data</IonLabel>
-          <IonDatetime
-              value={dateOfProduction.toISOString()}
-              onIonChange={(e) => setDateOfProduction(new Date(e.detail.value as string))}
-              presentation="date"
-          />
-        </IonItem>
+        <IonDatetime
+            value={dateOfProduction.toISOString()}
+            onIonChange={(e) => setDateOfProduction(new Date(e.detail.value as string))}
+            presentation="date"
+        />
         <IonToggle
             checked={isGlutenFree}
             onIonChange={e => setIsGlutenFree(e.detail.checked)}

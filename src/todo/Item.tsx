@@ -9,15 +9,15 @@ interface ItemPropsExt extends ItemProps {
 
 const log = getLogger('Item');
 
-const Item: React.FC<ItemPropsExt> = ({ id, name,price,date_of_production,is_gluten_free, onEdit }) => {
-    log('Current item: ',id,name,price,date_of_production,is_gluten_free);
+const Item: React.FC<ItemPropsExt> = ({ id, name,price,dateOfProduction,isGlutenFree, onEdit }) => {
+    log('Current item: ',id,name,price,dateOfProduction,isGlutenFree);
     return (
         <IonItem onClick={() => onEdit(id)}>
             <IonLabel>{id}</IonLabel>
             <IonLabel>{name}</IonLabel>
             <IonLabel>{price}</IonLabel>
-            <IonLabel>{new Date(date_of_production).toDateString()}</IonLabel>
-            <IonLabel>{is_gluten_free ? 'Gluten Free' : 'Not gluten free'}</IonLabel>
+            <IonLabel>{new Date(dateOfProduction).toDateString()}</IonLabel>
+            <IonLabel>{isGlutenFree ? 'Gluten Free' : 'Not gluten free'}</IonLabel>
         </IonItem>
     );
 };

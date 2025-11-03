@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { getLogger } from '../core';
-import { login as loginApi } from './authApi';
+import React, {useCallback, useEffect, useState} from 'react';
+import {getLogger} from '../core';
+import {login as loginApi} from './authApi';
+import {AuthContext as AuthContext1, initialState} from "./AuthContext";
 
 const log = getLogger('AuthProvider');
 
@@ -18,16 +19,6 @@ export interface AuthState {
     password?: string;
     token: string;
 }
-
-const initialState: AuthState = {
-    isAuthenticated: false,
-    isAuthenticating: false,
-    authenticationError: null,
-    pendingAuthentication: false,
-    token: '',
-};
-
-export const AuthContext = React.createContext<AuthState>(initialState);
 
 interface AuthProviderProps {
     children: React.ReactNode;
@@ -47,9 +38,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     log('render');
 
     return (
-        <AuthContext.Provider value={value}>
+        <AuthContext1 value={value}>
             {children}
-        </AuthContext.Provider>
+        </AuthContext1>
     );
 
     function loginCallback(username?: string, password?: string): void {

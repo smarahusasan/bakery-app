@@ -40,8 +40,8 @@ const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
                   id,
                   name,
                   price,
-                  date_of_production,
-                  is_gluten_free
+                  dateOfProduction,
+                  isGlutenFree
                 } = item;
 
                 return (
@@ -50,8 +50,8 @@ const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
                         id={id}
                         name={name}
                         price={price}
-                        date_of_production={date_of_production}
-                        is_gluten_free={is_gluten_free}
+                        dateOfProduction={dateOfProduction}
+                        isGlutenFree={isGlutenFree}
                         onEdit={id => history.push(`/item/${id}`)}
                     />
                 );
