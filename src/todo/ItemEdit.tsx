@@ -4,7 +4,7 @@ import {
   IonButtons,
   IonContent, IonDatetime,
   IonHeader,
-  IonInput, IonItem, IonLabel,
+  IonInput,
   IonLoading,
   IonPage,
   IonTitle, IonToggle,
