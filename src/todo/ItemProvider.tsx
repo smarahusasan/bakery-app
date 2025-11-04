@@ -3,6 +3,7 @@ import { getLogger } from '../core';
 import { ItemProps } from './ItemProps';
 import { createItem, getItems, newWebSocket, updateItem } from './itemApi';
 import {AuthContext} from "../auth";
+import {NetworkContext} from "../network/NetworkContext";
 
 const log = getLogger('ItemProvider');
 
@@ -33,6 +34,7 @@ const FETCH_ITEMS_FAILED = 'FETCH_ITEMS_FAILED';
 const SAVE_ITEM_STARTED = 'SAVE_ITEM_STARTED';
 const SAVE_ITEM_SUCCEEDED = 'SAVE_ITEM_SUCCEEDED';
 const SAVE_ITEM_FAILED = 'SAVE_ITEM_FAILED';
+const REMOVE_TEMP_ITEM = 'REMOVE_TEMP_ITEM';
 
 const reducer: (state: ItemsState, action: ActionProps) => ItemsState =
   (state, { type, payload }) => {
@@ -64,6 +66,11 @@ const reducer: (state: ItemsState, action: ActionProps) => ItemsState =
         const {error} = payload as { error: Error };
         return {...state, savingError: error, saving: false};
       }
+      case REMOVE_TEMP_ITEM: {
+        const { id } = payload as { id: string };
+        const items = (state.items || []).filter(it => it.id !== id);
+        return { ...state, items };
+      }
       default:
         return state;
     }
@@ -77,10 +84,19 @@ interface ItemProviderProps {
 
 export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+
   const { items, fetching, fetchingError, saving, savingError } = state;
+
   const { token } = useContext(AuthContext);
+  const {online}=useContext(NetworkContext);
+
   useEffect(getItemsEffect, [token]);
   useEffect(wsEffect, []);
+  useEffect(() => {
+    if(online){
+      syncLocalItems();
+    }
+  }, [online]);
   const saveItem = useCallback<SaveItemFn>(saveItemCallback, []);
   const value = { items, fetching, fetchingError, saving, savingError, saveItem };
   log('returns');
@@ -120,13 +136,53 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
       log('saveItem started');
       console.log("SALVAM ITEM: ", item);
       dispatch({ type: SAVE_ITEM_STARTED });
+
       const savedItem = await (item.id ? updateItem(item) : createItem(item));
-      log('saveItem succeeded');
+
       dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item: savedItem } });
+
+      log('saveItem succeeded');
     } catch (error) {
-      log('saveItem failed');
-      dispatch({ type: SAVE_ITEM_FAILED, payload: { error } });
-      throw error;
+      log('saveItem failed (REST failed, fallback local)\n',error);
+      const fallbackItem = { ...item, id: item.id ?? 'temp'+Date.now().toString()};
+      saveItemLocally(fallbackItem);
+      dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item: fallbackItem } });
+    }
+  }
+
+  function saveItemLocally(item: ItemProps) {
+    const local = JSON.parse(localStorage.getItem("offlineItems") || "[]");
+    local.push(item);
+    localStorage.setItem("offlineItems", JSON.stringify(local));
+  }
+
+  async function syncLocalItems() {
+    const local = JSON.parse(localStorage.getItem("offlineItems") || "[]");
+    if (local.length === 0) return;
+
+    log(`syncLocalItems: ${local.length} items`);
+    const synced: string[] = [];
+
+    for (const item of local) {
+      try {
+        const savedItem = await (item.id && !item.id.toString().startsWith('temp')
+            ? updateItem(item)
+            : createItem(item));
+
+        dispatch({type:'REMOVE_TEMP_ITEM', payload:{id:item.id}});
+
+        synced.push(item.id);
+        dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item: savedItem } });
+        log(`Synced item: ${item.name}`);
+      } catch (e) {
+        log(`Failed to sync item: ${item.name}.`,e);
+      }
+    }
+    const remaining = local.filter((i: ItemProps) => !synced.find((sid) => sid === i.id));
+    localStorage.setItem("offlineItems", JSON.stringify(remaining));
+
+    if (synced.length > 0) {
+      console.log(`✅ ${synced.length} items synced successfully`);
     }
   }
 
