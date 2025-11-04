@@ -14,9 +14,9 @@ import {
 import { add } from 'ionicons/icons';
 import Item from './Item';
 import { getLogger } from '../core';
-import { ItemContext } from './ItemProvider';
 import {NetworkStatus} from "../network/NetworkStatus";
 import {LogoutButton} from "../components/LogoutButton";
+import {ItemContext} from "./ItemContext";
 
 const log = getLogger('ItemList');
 

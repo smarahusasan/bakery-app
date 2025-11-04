@@ -1,9 +1,10 @@
 import React, {useCallback, useContext, useEffect, useReducer} from 'react';
-import { getLogger } from '../core';
-import { ItemProps } from './ItemProps';
-import { createItem, getItems, newWebSocket, updateItem } from './itemApi';
+import {getLogger} from '../core';
+import {ItemProps} from './ItemProps';
+import {createItem, getItems, newWebSocket, updateItem} from './itemApi';
 import {AuthContext} from "../auth";
 import {NetworkContext} from "../network/NetworkContext";
+import {initialState, ItemContext as ItemContext1} from "./ItemContext";
 
 const log = getLogger('ItemProvider');
 
@@ -22,11 +23,6 @@ interface ActionProps {
   type: string,
   payload?: unknown,
 }
-
-const initialState: ItemsState = {
-  fetching: false,
-  saving: false,
-};
 
 const FETCH_ITEMS_STARTED = 'FETCH_ITEMS_STARTED';
 const FETCH_ITEMS_SUCCEEDED = 'FETCH_ITEMS_SUCCEEDED';
@@ -76,8 +72,6 @@ const reducer: (state: ItemsState, action: ActionProps) => ItemsState =
     }
   };
 
-export const ItemContext = React.createContext<ItemsState>(initialState);
-
 interface ItemProviderProps {
   children: React.ReactNode;
 }
@@ -101,9 +95,9 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
   const value = { items, fetching, fetchingError, saving, savingError, saveItem };
   log('returns');
   return (
-    <ItemContext.Provider value={value}>
+    <ItemContext1 value={value}>
       {children}
-    </ItemContext.Provider>
+    </ItemContext1>
   );
 
   function getItemsEffect() {
