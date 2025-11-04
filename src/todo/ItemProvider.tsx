@@ -4,7 +4,7 @@ import {ItemProps} from './ItemProps';
 import {createItem, getItems, newWebSocket, updateItem} from './itemApi';
 import {AuthContext} from "../auth";
 import {NetworkContext} from "../network/NetworkContext";
-import {initialState, ItemContext as ItemContext1} from "./ItemContext";
+import {initialState, ItemContext} from "./ItemContext";
 
 const log = getLogger('ItemProvider');
 
@@ -12,11 +12,16 @@ type SaveItemFn = (item: ItemProps) => Promise<void>;
 
 export interface ItemsState {
   items?: ItemProps[],
+  visibleItems?: ItemProps[],
   fetching: boolean,
   fetchingError?: Error | null,
   saving: boolean,
   savingError?: Error | null,
   saveItem?: SaveItemFn,
+  page:number,
+  pageSize:number,
+  totalPages:number,
+  setPage?:(page:number) => void,
 }
 
 interface ActionProps {
@@ -31,6 +36,8 @@ const SAVE_ITEM_STARTED = 'SAVE_ITEM_STARTED';
 const SAVE_ITEM_SUCCEEDED = 'SAVE_ITEM_SUCCEEDED';
 const SAVE_ITEM_FAILED = 'SAVE_ITEM_FAILED';
 const REMOVE_TEMP_ITEM = 'REMOVE_TEMP_ITEM';
+const SET_PAGE='SET_PAGE';
+const UPDATE_VISIBLE_ITEMS='UPDATE_VISIBLE_ITEMS';
 
 const reducer: (state: ItemsState, action: ActionProps) => ItemsState =
   (state, { type, payload }) => {
@@ -67,6 +74,22 @@ const reducer: (state: ItemsState, action: ActionProps) => ItemsState =
         const items = (state.items || []).filter(it => it.id !== id);
         return { ...state, items };
       }
+      case SET_PAGE:{
+        const {page}=payload as { page:number };
+        const start = (page-1)*state.pageSize;
+        const items = (state.items || []);
+        const end=((start+state.pageSize) > items.length) ? items.length : (start+state.pageSize);
+        const visibleItems = items.slice(start,end);
+        return {...state, page,visibleItems};
+      }
+      case UPDATE_VISIBLE_ITEMS: {
+        const start = (state.page - 1) * state.pageSize;
+        const items = (state.items || []);
+        const end=((start+state.pageSize) > items.length) ? items.length : (start+state.pageSize);
+        const visibleItems = items.slice(start, end);
+        const totalPages = Math.ceil((items?.length || 0) / state.pageSize);
+        return { ...state, visibleItems, totalPages };
+      }
       default:
         return state;
     }
@@ -79,7 +102,7 @@ interface ItemProviderProps {
 export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const { items, fetching, fetchingError, saving, savingError } = state;
+  const { fetching, fetchingError, saving, savingError,page,pageSize,totalPages } = state;
 
   const { token } = useContext(AuthContext);
   const {online}=useContext(NetworkContext);
@@ -91,13 +114,22 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
       syncLocalItems();
     }
   }, [online]);
-  const saveItem = useCallback<SaveItemFn>(saveItemCallback, []);
-  const value = { items, fetching, fetchingError, saving, savingError, saveItem };
+  useEffect(() => {
+    dispatch({ type: UPDATE_VISIBLE_ITEMS });
+  }, [state.items, state.pageSize, state.page]);
+
+  const saveItem = useCallback<SaveItemFn>(saveItemCallback, [online]);
+
+  const setPage=useCallback((page:number)=>{
+    dispatch({type:SET_PAGE,payload:{page}});
+  },[]);
+
+  const value = { visibleItems:state.visibleItems,fetching, fetchingError, saving, savingError, saveItem ,page,pageSize,totalPages,setPage };
   log('returns');
   return (
-    <ItemContext1 value={value}>
+    <ItemContext.Provider value={value}>
       {children}
-    </ItemContext1>
+    </ItemContext.Provider>
   );
 
   function getItemsEffect() {
@@ -132,15 +164,20 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
       dispatch({ type: SAVE_ITEM_STARTED });
 
       const savedItem = await (item.id ? updateItem(item) : createItem(item));
-
       dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item: savedItem } });
-
       log('saveItem succeeded');
     } catch (error) {
-      log('saveItem failed (REST failed, fallback local)\n',error);
-      const fallbackItem = { ...item, id: item.id ?? 'temp'+Date.now().toString()};
-      saveItemLocally(fallbackItem);
-      dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item: fallbackItem } });
+      log('saveItem failed',error);
+
+      if(!online){
+        const fallbackItem = { ...item, id: item.id ?? 'temp'+Date.now().toString()};
+        saveItemLocally(fallbackItem);
+        dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item: fallbackItem } });
+        log('Item saved locally');
+      }else{
+        dispatch({ type: SAVE_ITEM_FAILED, payload: { error } });
+        throw error;
+      }
     }
   }
 
@@ -163,13 +200,14 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
             ? updateItem(item)
             : createItem(item));
 
-        dispatch({type:'REMOVE_TEMP_ITEM', payload:{id:item.id}});
-
-        synced.push(item.id);
+        dispatch({type:REMOVE_TEMP_ITEM, payload:{id:item.id}});
         dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item: savedItem } });
         log(`Synced item: ${item.name}`);
       } catch (e) {
         log(`Failed to sync item: ${item.name}.`,e);
+        dispatch({type:REMOVE_TEMP_ITEM, payload:{id:item.id}});
+      }finally {
+        synced.push(item.id)
       }
     }
     const remaining = local.filter((i: ItemProps) => !synced.find((sid) => sid === i.id));

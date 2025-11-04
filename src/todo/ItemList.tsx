@@ -21,9 +21,10 @@ import {ItemContext} from "./ItemContext";
 const log = getLogger('ItemList');
 
 const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
-  const { items, fetching, fetchingError } = useContext(ItemContext);
+  const { visibleItems,page,totalPages,setPage, fetching, fetchingError } = useContext(ItemContext);
   log('render');
-  log('Log si mai nou:',items);
+  //log('Log si mai nou:',items);
+  log('Current items:',visibleItems)
   return (
     <IonPage>
       <IonHeader>
@@ -33,9 +34,9 @@ const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
       </IonHeader>
       <IonContent>
         <IonLoading isOpen={fetching} message="Fetching items" />
-        {items && (
+        {visibleItems && (
             <IonList>
-              {items.map(item => {
+              {visibleItems?.map(item => {
                 const {
                   id,
                   name,
@@ -61,6 +62,11 @@ const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
         {fetchingError && (
           <div>{fetchingError.message || 'Failed to fetch items'}</div>
         )}
+        <div style={{marginTop: 16}}>
+          <button disabled={page<=1} onClick={() => setPage ? setPage(page - 1) : null}>Prev</button>
+          <span style={{margin:' 0 8px'}}>Page {page} of {totalPages}</span>
+          <button disabled={page>=totalPages} onClick={() => setPage ? setPage(page+1) : null}>Next</button>
+        </div>
         <LogoutButton/>
         <NetworkStatus/>
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
