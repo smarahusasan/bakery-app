@@ -35,6 +35,8 @@ import { ItemList } from './todo';
 import { ItemProvider } from './todo/ItemProvider';
 import ItemEdit from './todo/ItemEdit';
 import {AuthProvider, Login, PrivateRoute} from "./auth";
+import {NetworkProvider} from "./network/NetworkProvider";
+import {NetworkStatus} from "./network/NetworkStatus";
 
 setupIonicReact();
 
@@ -42,15 +44,19 @@ const App: React.FC = () => (
     <IonApp>
         <IonReactRouter>
             <IonRouterOutlet>
-                <AuthProvider>
-                    <Route path="/login" component={Login} exact={true}/>
-                    <ItemProvider>
-                        <PrivateRoute component={ItemList} path="/items" exact={true}/>
-                        <PrivateRoute component={ItemEdit} path="/item" exact={true}/>
-                        <PrivateRoute component={ItemEdit} path="/item/:id" exact={true}/>
-                    </ItemProvider>
-                    <Route exact path={"/"} render={()=><Redirect to="/login"/>}/>
-                </AuthProvider>
+                <NetworkProvider>
+                    <AuthProvider>
+                        <Route path="/login" component={Login} exact={true}/>
+                        <ItemProvider>
+                            <PrivateRoute component={ItemList} path="/items" exact={true}/>
+                            <PrivateRoute component={ItemEdit} path="/item" exact={true}/>
+                            <PrivateRoute component={ItemEdit} path="/item/:id" exact={true}/>
+                        </ItemProvider>
+                        <Route exact path={"/"} render={()=><Redirect to="/login"/>}/>
+                    </AuthProvider>
+
+                    <NetworkStatus/>
+                </NetworkProvider>
             </IonRouterOutlet>
         </IonReactRouter>
     </IonApp>
