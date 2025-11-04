@@ -11,17 +11,22 @@ const log = getLogger('ItemProvider');
 type SaveItemFn = (item: ItemProps) => Promise<void>;
 
 export interface ItemsState {
-  items?: ItemProps[],
-  visibleItems?: ItemProps[],
+  items: ItemProps[],
+  visibleItems: ItemProps[],
+  filteredItems: ItemProps[],
   fetching: boolean,
   fetchingError?: Error | null,
   saving: boolean,
   savingError?: Error | null,
-  saveItem?: SaveItemFn,
   page:number,
   pageSize:number,
   totalPages:number,
+  searchTerm:string,
+  filterGlutenFree: 'all' | 'yes' | 'no',
+  saveItem?: SaveItemFn,
   setPage?:(page:number) => void,
+  setSearchTerm?: (term: string) => void,
+  setFilterGlutenFree?: (filter: 'all' | 'yes' | 'no') => void;
 }
 
 interface ActionProps {
@@ -38,6 +43,9 @@ const SAVE_ITEM_FAILED = 'SAVE_ITEM_FAILED';
 const REMOVE_TEMP_ITEM = 'REMOVE_TEMP_ITEM';
 const SET_PAGE='SET_PAGE';
 const UPDATE_VISIBLE_ITEMS='UPDATE_VISIBLE_ITEMS';
+const SET_FILTER='SET_FILTER';
+const SET_SEARCH_TERM='SET_SEARCH_TERM';
+const RESET='RESET';
 
 const reducer: (state: ItemsState, action: ActionProps) => ItemsState =
   (state, { type, payload }) => {
@@ -83,13 +91,29 @@ const reducer: (state: ItemsState, action: ActionProps) => ItemsState =
         return {...state, page,visibleItems};
       }
       case UPDATE_VISIBLE_ITEMS: {
+        let filtered = state.items;
+        if (state.searchTerm) {
+          filtered = filtered.filter(item =>
+              item.name.toLowerCase().includes(state.searchTerm.toLowerCase())
+          );
+        }
+        if (state.filterGlutenFree !== 'all') {
+          filtered = filtered.filter(item =>
+              state.filterGlutenFree === 'yes' ? item.isGlutenFree : !item.isGlutenFree
+          );
+        }
+        const totalPages = Math.ceil(filtered.length / state.pageSize) || 1;
         const start = (state.page - 1) * state.pageSize;
-        const items = (state.items || []);
-        const end=((start+state.pageSize) > items.length) ? items.length : (start+state.pageSize);
-        const visibleItems = items.slice(start, end);
-        const totalPages = Math.ceil((items?.length || 0) / state.pageSize);
-        return { ...state, visibleItems, totalPages };
+        const end=((start+state.pageSize) > filtered.length) ? filtered.length : (start+state.pageSize);
+        const visibleItems = filtered.slice(start, end);
+        return { ...state, filteredItems: filtered, visibleItems, totalPages };
       }
+      case SET_SEARCH_TERM:
+        return { ...state, searchTerm: payload as string, page: 1 };
+      case SET_FILTER:
+        return { ...state, filterGlutenFree: payload as  'yes' | 'no' | 'all', page: 1 };
+      case RESET:
+        return initialState;
       default:
         return state;
     }
@@ -101,8 +125,6 @@ interface ItemProviderProps {
 
 export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
-
-  const { fetching, fetchingError, saving, savingError,page,pageSize,totalPages } = state;
 
   const { token } = useContext(AuthContext);
   const {online}=useContext(NetworkContext);
@@ -116,7 +138,12 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
   }, [online]);
   useEffect(() => {
     dispatch({ type: UPDATE_VISIBLE_ITEMS });
-  }, [state.items, state.pageSize, state.page]);
+  }, [state.items, state.pageSize, state.page, state.searchTerm,state.filterGlutenFree]);
+  useEffect(() => {
+    if (!token) {
+      dispatch({ type: 'RESET' });
+    }
+  }, [token]);
 
   const saveItem = useCallback<SaveItemFn>(saveItemCallback, [online]);
 
@@ -124,7 +151,11 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
     dispatch({type:SET_PAGE,payload:{page}});
   },[]);
 
-  const value = { visibleItems:state.visibleItems,fetching, fetchingError, saving, savingError, saveItem ,page,pageSize,totalPages,setPage };
+  const setSearchTerm = useCallback((term: string) => dispatch({ type: 'SET_SEARCH_TERM', payload: term }), []);
+  const setFilterGlutenFree = useCallback((filter: 'all' | 'yes' | 'no') =>
+      dispatch({ type: 'SET_FILTER', payload: filter }), []);
+
+  const value = { ...state, saveItem, setPage,setSearchTerm,setFilterGlutenFree };
   log('returns');
   return (
     <ItemContext.Provider value={value}>
@@ -214,7 +245,7 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
     localStorage.setItem("offlineItems", JSON.stringify(remaining));
 
     if (synced.length > 0) {
-      console.log(`✅ ${synced.length} items synced successfully`);
+      console.log(`${synced.length} items synced successfully`);
     }
   }
 

@@ -7,7 +7,7 @@ import {
   IonHeader,
   IonIcon,
   IonList, IonLoading,
-  IonPage,
+  IonPage, IonSearchbar, IonSelect, IonSelectOption,
   IonTitle,
   IonToolbar
 } from '@ionic/react';
@@ -21,7 +21,7 @@ import {ItemContext} from "./ItemContext";
 const log = getLogger('ItemList');
 
 const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
-  const { visibleItems,page,totalPages,setPage, fetching, fetchingError } = useContext(ItemContext);
+  const { visibleItems,page,totalPages,setPage, fetching, fetchingError,searchTerm, setSearchTerm, filterGlutenFree, setFilterGlutenFree } = useContext(ItemContext);
   log('render');
   //log('Log si mai nou:',items);
   log('Current items:',visibleItems)
@@ -33,6 +33,13 @@ const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
         </IonToolbar>
       </IonHeader>
       <IonContent>
+        <IonSearchbar value={searchTerm} onIonInput={e => setSearchTerm ? setSearchTerm(e.detail.value!) : null} />
+
+        <IonSelect value={filterGlutenFree} onIonChange={e =>setFilterGlutenFree ? setFilterGlutenFree(e.detail.value) : null}>
+          <IonSelectOption value="all">All</IonSelectOption>
+          <IonSelectOption value="yes">Gluten Free</IonSelectOption>
+          <IonSelectOption value="no">Not Gluten Free</IonSelectOption>
+        </IonSelect>
         <IonLoading isOpen={fetching} message="Fetching items" />
         {visibleItems && (
             <IonList>
