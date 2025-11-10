@@ -5,6 +5,7 @@ import {createItem, getItems, newWebSocket, updateItem} from './itemApi';
 import {AuthContext} from "../auth";
 import {NetworkContext} from "../network/NetworkContext";
 import {initialState, ItemContext} from "./ItemContext";
+import {useToast} from "./NotifProvider";
 
 const log = getLogger('ItemProvider');
 
@@ -129,6 +130,8 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
   const { token } = useContext(AuthContext);
   const {online}=useContext(NetworkContext);
 
+  const { showToast } = useToast();
+
   useEffect(getItemsEffect, [token]);
   useEffect(wsEffect, []);
   useEffect(() => {
@@ -204,6 +207,7 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({ children }) => {
         const fallbackItem = { ...item, id: item.id ?? 'temp'+Date.now().toString()};
         saveItemLocally(fallbackItem);
         dispatch({ type: SAVE_ITEM_SUCCEEDED, payload: { item: fallbackItem } });
+        showToast(`Item "${item.name}" saved locally. Will sync when online.`);
         log('Item saved locally');
       }else{
         dispatch({ type: SAVE_ITEM_FAILED, payload: { error } });
