@@ -4,4 +4,6 @@ export interface ItemProps {
   price:number;
   dateOfProduction:Date;
   isGlutenFree:boolean;
+  photoUrl?:string;
+  location?:{lat:number, lng:number};
 }

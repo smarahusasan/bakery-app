@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { IonItem, IonLabel } from '@ionic/react';
+import {IonImg, IonItem, IonLabel, IonThumbnail} from '@ionic/react';
 import { ItemProps } from './ItemProps';
 import {getLogger} from "../core";
 
@@ -9,15 +9,23 @@ interface ItemPropsExt extends ItemProps {
 
 const log = getLogger('Item');
 
-const Item: React.FC<ItemPropsExt> = ({ id, name,price,dateOfProduction,isGlutenFree, onEdit }) => {
-    log('Current item: ',id,name,price,dateOfProduction,isGlutenFree);
+const Item: React.FC<ItemPropsExt> = ({ id, name,price,dateOfProduction,isGlutenFree, photoUrl,onEdit }) => {
+    log('Current item: ',id,name,price,dateOfProduction,isGlutenFree, photoUrl);
     return (
-        <IonItem onClick={() => onEdit(id)}>
-            <IonLabel>{id}</IonLabel>
-            <IonLabel>{name}</IonLabel>
-            <IonLabel>{price}</IonLabel>
-            <IonLabel>{new Date(dateOfProduction).toDateString()}</IonLabel>
-            <IonLabel>{isGlutenFree ? 'Gluten Free' : 'Not gluten free'}</IonLabel>
+        <IonItem button onClick={() => onEdit(id)}>
+            {photoUrl && (
+                <IonThumbnail slot="start">
+                    <IonImg src={photoUrl} />
+                </IonThumbnail>
+            )}
+
+            <IonLabel>
+                <h2>{name}</h2>
+                <p>ID: {id}</p>
+                <p>Price: {price}</p>
+                <p>{new Date(dateOfProduction).toDateString()}</p>
+                <p>{isGlutenFree ? 'Gluten Free' : 'Not gluten free'}</p>
+            </IonLabel>
         </IonItem>
     );
 };
