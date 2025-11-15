@@ -2,6 +2,7 @@
 
 An **Ionic** application for managing bakery products with real-time updates using **Coa** and **WebSocket**.
 
+
 ---
 
 ## Features
@@ -18,6 +19,7 @@ An **Ionic** application for managing bakery products with real-time updates usi
 - Pagination, search, and filtering (gluten-free or not).
 - Offline support: items can be saved locally and synced when back online.
 - User authentication and logout support.
+
 
 ---
 
