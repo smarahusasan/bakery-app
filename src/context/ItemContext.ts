@@ -1,5 +1,5 @@
 import React from "react";
-import {ItemsState} from "./ItemProvider";
+import {ItemsState} from "../provider/ItemProvider";
 
 export const initialState: ItemsState = {
     items:[],

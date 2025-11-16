@@ -1,6 +1,6 @@
 import {IonButton} from "@ionic/react";
-import {AuthContext} from "../auth";
 import {useContext} from "react";
+import {AuthContext} from "../context/AuthContext";
 
 export const LogoutButton=()=>{
     const {logout} = useContext(AuthContext);

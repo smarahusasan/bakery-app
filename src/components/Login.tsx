@@ -1,8 +1,8 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
 import { IonButton, IonContent, IonHeader, IonInput, IonLoading, IonPage, IonTitle, IonToolbar } from '@ionic/react';
-import { getLogger } from '../core';
-import {AuthContext} from "./AuthContext";
+import {AuthContext} from "../context/AuthContext";
+import {getLogger} from "../core/logger";
 
 const log = getLogger('Login');
 

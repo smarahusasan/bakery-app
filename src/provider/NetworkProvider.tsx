@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {NetworkContext} from "./NetworkContext";
+import {NetworkContext} from "../context/NetworkContext";
 
 interface NetworkProviderProps {
     children: React.ReactNode;

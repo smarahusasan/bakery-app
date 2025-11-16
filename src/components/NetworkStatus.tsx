@@ -1,6 +1,6 @@
 import {useContext, useEffect, useState} from "react";
 import {IonToast} from "@ionic/react";
-import {NetworkContext} from "./NetworkContext";
+import {NetworkContext} from "../context/NetworkContext";
 
 export const NetworkStatus =()=>{
     const {online} = useContext(NetworkContext);

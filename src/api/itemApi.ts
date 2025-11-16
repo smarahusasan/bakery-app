@@ -1,7 +1,8 @@
 import axios from 'axios';
-import {authConfig, getLogger, withLogs} from '../core';
-import { ItemProps } from './ItemProps';
-import {BackendItemProps} from "./BackendItemProps";
+import {authConfig, withLogs} from '../core';
+import { ItemProps } from '../types/ItemProps';
+import {BackendItemProps} from "../types/BackendItemProps";
+import {getLogger} from "../core/logger";
 
 const log = getLogger('itemApi');
 
@@ -13,6 +14,9 @@ const parseItem = (item: BackendItemProps): ItemProps=>({
   price: item.price,
   dateOfProduction: new Date(item.date_of_production),
   isGlutenFree: item.is_gluten_free,
+  photo:item.photo,
+  photoPath: item.photoPath,
+  location: item.location,
 });
 
 export const getItems: () => Promise<ItemProps[]> = async () => {

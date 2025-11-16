@@ -1,11 +1,11 @@
 import React, {useCallback, useContext, useEffect, useReducer} from 'react';
-import {getLogger} from '../core';
-import {ItemProps} from './ItemProps';
-import {createItem, getItems, newWebSocket, updateItem} from './itemApi';
-import {AuthContext} from "../auth";
-import {NetworkContext} from "../network/NetworkContext";
-import {initialState, ItemContext} from "./ItemContext";
+import {AuthContext} from '../core';
+import {ItemProps} from '../types/ItemProps';
+import {createItem, getItems, newWebSocket, updateItem} from '../api/itemApi';
+import {NetworkContext} from "../context/NetworkContext";
+import {initialState, ItemContext} from "../context/ItemContext";
 import {useToast} from "./NotifProvider";
+import {getLogger} from "../core/logger";
 
 const log = getLogger('ItemProvider');
 

@@ -13,10 +13,10 @@ import {
 } from '@ionic/react';
 import { add } from 'ionicons/icons';
 import Item from './Item';
-import { getLogger } from '../core';
-import {NetworkStatus} from "../network/NetworkStatus";
-import {LogoutButton} from "../components/LogoutButton";
-import {ItemContext} from "./ItemContext";
+import {NetworkStatus} from "./NetworkStatus";
+import {LogoutButton} from "./LogoutButton";
+import {ItemContext} from "../context/ItemContext";
+import {getLogger} from "../core/logger";
 
 const log = getLogger('ItemList');
 
@@ -43,27 +43,20 @@ const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
         <IonLoading isOpen={fetching} message="Fetching items" />
         {visibleItems && (
             <IonList>
-              {visibleItems?.map(item => {
-                const {
-                  id,
-                  name,
-                  price,
-                  dateOfProduction,
-                  isGlutenFree
-                } = item;
-
-                return (
-                    <Item
-                        key={id}
-                        id={id}
-                        name={name}
-                        price={price}
-                        dateOfProduction={dateOfProduction}
-                        isGlutenFree={isGlutenFree}
-                        onEdit={id => history.push(`/item/${id}`)}
-                    />
-                );
-              })}
+              {visibleItems.map(item => (
+                  <Item
+                      key={item.id}
+                      id={item.id}
+                      name={item.name}
+                      price={item.price}
+                      dateOfProduction={item.dateOfProduction}
+                      isGlutenFree={item.isGlutenFree}
+                      photo={item.photo}                    // <-- ADAUGĂ foto
+                      photoPath={item.photoPath}
+                      location={item.location}              // <-- ADAUGĂ locație
+                      onEdit={id => history.push(`/item/${id}`)}
+                  />
+              ))}
             </IonList>
         )}
         {fetchingError && (

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useReducer } from 'react';
-import { getLogger } from '../core';
-import { ItemProps } from './ItemProps';
-import { getItems } from './itemApi';
+import { ItemProps } from '../types/ItemProps';
+import { getItems } from '../api/itemApi';
+import {getLogger} from "../core/logger";
 
 const log = getLogger('useItems');
 

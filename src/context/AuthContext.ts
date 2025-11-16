@@ -1,5 +1,5 @@
 import React from "react";
-import {AuthState} from "./AuthProvider";
+import {AuthState} from "../auth/AuthProvider";
 
 export const initialState: AuthState = {
     isAuthenticated: false,

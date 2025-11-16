@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {getLogger} from '../core';
-import {login as loginApi} from './authApi';
-import {AuthContext as AuthContext1, initialState} from "./AuthContext";
+import {login as loginApi} from '../api/authApi';
+import {AuthContext as AuthContext1, initialState} from "../context/AuthContext";
+import {getLogger} from "../core/logger";
 
 const log = getLogger('AuthProvider');
 

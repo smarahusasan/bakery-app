@@ -31,13 +31,12 @@ import '@ionic/react/css/palettes/dark.system.css';
 
 /* Theme variables */
 import './theme/variables.css';
-import { ItemList } from './todo';
-import { ItemProvider } from './todo/ItemProvider';
-import ItemEdit from './todo/ItemEdit';
-import {AuthProvider, Login, PrivateRoute} from "./auth";
-import {NetworkProvider} from "./network/NetworkProvider";
-import {NetworkStatus} from "./network/NetworkStatus";
-import { ToastProvider } from './todo/NotifProvider';
+import { ItemProvider } from './provider/ItemProvider';
+import ItemEdit from './components/ItemEdit';
+import {NetworkProvider} from "./provider/NetworkProvider";
+import {NetworkStatus} from "./components/NetworkStatus";
+import { ToastProvider } from './provider/NotifProvider';
+import {AuthProvider, ItemList, Login, PrivateRoute} from "./core";
 
 setupIonicReact();
 
