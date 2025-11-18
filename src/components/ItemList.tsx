@@ -1,6 +1,8 @@
+import '../theme/variables.css';
 import React, {useContext, useState} from 'react';
 import { RouteComponentProps } from 'react-router';
 import {
+  createAnimation,
   IonButton,
   IonContent,
   IonFab,
@@ -23,13 +25,28 @@ import {ResourceMapPicker} from "./ResourceMapPicker";
 const log = getLogger('ItemList');
 
 const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
-  const { visibleItems,page,totalPages,setPage, fetching, fetchingError,searchTerm, setSearchTerm, filterGlutenFree, setFilterGlutenFree } = useContext(ItemContext);
+  const { items,visibleItems,page,totalPages,setPage, fetching, fetchingError,searchTerm, setSearchTerm, filterGlutenFree, setFilterGlutenFree } = useContext(ItemContext);
 
   const [showMap, setShowMap] = useState(false);
 
   log('render');
   //log('Log si mai nou:',items);
   //log('Current items:',visibleItems)
+
+  const spinInModal = (baseEl) => {
+    return createAnimation()
+        .addElement(baseEl)
+        .duration(600)
+        .fromTo('transform', 'rotateY(-180deg) scale(0.6)', 'rotateY(0deg) scale(1)');
+  };
+
+  const spinOutModal = (baseEl) => {
+    return createAnimation()
+        .addElement(baseEl)
+        .duration(600)
+        .fromTo('transform', 'rotateY(0deg) scale(1)', 'rotateY(180deg) scale(0.6)');
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -41,11 +58,17 @@ const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
         <IonButton expand="block" onClick={() => setShowMap(true)}>
           Open map
         </IonButton>
-        <IonModal isOpen={showMap} swipeToClose onDidDismiss={() => setShowMap(false)}>
+        <IonModal
+            isOpen={showMap}
+            swipeToClose
+            onDidDismiss={() => setShowMap(false)}
+            enterAnimation={spinInModal}
+            leaveAnimation={spinOutModal}
+        >
           <div style={{padding: 20, textAlign:'center'}}>
             <h4>Select resource by location</h4>
             <ResourceMapPicker
-                resources={visibleItems}
+                resources={items}
                 onSelect={item => {
                   setShowMap(false);
                   history.push(`/item/${item.id}`);
@@ -67,15 +90,14 @@ const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
             <IonList>
               {visibleItems.map(item => (
                   <Item
-                      key={item.id}
                       id={item.id}
                       name={item.name}
                       price={item.price}
                       dateOfProduction={item.dateOfProduction}
                       isGlutenFree={item.isGlutenFree}
-                      photo={item.photo}                    // <-- ADAUGĂ foto
+                      photo={item.photo}
                       photoPath={item.photoPath}
-                      location={item.location}              // <-- ADAUGĂ locație
+                      location={item.location}
                       onEdit={id => history.push(`/item/${id}`)}
                   />
               ))}

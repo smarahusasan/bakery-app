@@ -12,6 +12,7 @@ const log = getLogger('Item');
 const Item: React.FC<ItemPropsExt> = ({ id, name,price,dateOfProduction,isGlutenFree,photo,photoPath, location, onEdit }) => {
     //log('Current item: ',id,name,price,dateOfProduction,isGlutenFree,photo,photoPath,location);
     return (
+        <div key={id} className="animated-in">
         <IonItem onClick={() => onEdit(id)}>
             <IonLabel>{id}</IonLabel>
             <IonLabel>{name}</IonLabel>
@@ -27,6 +28,7 @@ const Item: React.FC<ItemPropsExt> = ({ id, name,price,dateOfProduction,isGluten
                 </IonLabel>
             )}
         </IonItem>
+        </div>
     );
 };
 
