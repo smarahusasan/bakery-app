@@ -1,12 +1,13 @@
-import React, { useContext } from 'react';
+import React, {useContext, useState} from 'react';
 import { RouteComponentProps } from 'react-router';
 import {
+  IonButton,
   IonContent,
   IonFab,
   IonFabButton,
   IonHeader,
   IonIcon,
-  IonList, IonLoading,
+  IonList, IonLoading, IonModal,
   IonPage, IonSearchbar, IonSelect, IonSelectOption,
   IonTitle,
   IonToolbar
@@ -17,14 +18,18 @@ import {NetworkStatus} from "./NetworkStatus";
 import {LogoutButton} from "./LogoutButton";
 import {ItemContext} from "../context/ItemContext";
 import {getLogger} from "../core/logger";
+import {ResourceMapPicker} from "./ResourceMapPicker";
 
 const log = getLogger('ItemList');
 
 const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
   const { visibleItems,page,totalPages,setPage, fetching, fetchingError,searchTerm, setSearchTerm, filterGlutenFree, setFilterGlutenFree } = useContext(ItemContext);
+
+  const [showMap, setShowMap] = useState(false);
+
   log('render');
   //log('Log si mai nou:',items);
-  log('Current items:',visibleItems)
+  //log('Current items:',visibleItems)
   return (
     <IonPage>
       <IonHeader>
@@ -33,6 +38,23 @@ const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
         </IonToolbar>
       </IonHeader>
       <IonContent>
+        <IonButton expand="block" onClick={() => setShowMap(true)}>
+          Open map
+        </IonButton>
+        <IonModal isOpen={showMap} swipeToClose onDidDismiss={() => setShowMap(false)}>
+          <div style={{padding: 20, textAlign:'center'}}>
+            <h4>Select resource by location</h4>
+            <ResourceMapPicker
+                resources={visibleItems}
+                onSelect={item => {
+                  setShowMap(false);
+                  history.push(`/item/${item.id}`);
+                }}
+            />
+            <IonButton onClick={() => setShowMap(false)}>Cancel</IonButton>
+          </div>
+        </IonModal>
+
         <IonSearchbar value={searchTerm} onIonInput={e => setSearchTerm ? setSearchTerm(e.detail.value!) : null} />
 
         <IonSelect value={filterGlutenFree} onIonChange={e =>setFilterGlutenFree ? setFilterGlutenFree(e.detail.value) : null}>

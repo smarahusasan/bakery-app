@@ -17,6 +17,7 @@ import {Camera} from "@capacitor/camera";
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import Webcam from "react-webcam";
 import {getLogger} from "../core/logger";
+import {MapPicker} from "./MapPicker";
 
 const log = getLogger('ItemEdit');
 
@@ -84,7 +85,7 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
     }
   }, [match.params.id, items]);
   const handleSave = useCallback(() => {
-    console.log("INAINTE DE SALVARE: ", dateOfProduction);
+    //console.log("INAINTE DE SALVARE: ", dateOfProduction);
     const editedItem = item ? { ...item, name,price,dateOfProduction ,isGlutenFree, photo,location } : { name, price,dateOfProduction,isGlutenFree,photo,location };
     if (saveItem) {
       saveItem(editedItem)
@@ -151,26 +152,36 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
           </div>
         </IonModal>
         {photo &&
-            <IonImg src={photo} />
+            <>
+              <IonImg src={photo} />
+              <IonButton
+                  expand="block"
+                  href={photo}
+                  download={`poza_${Date.now()}.jpeg`}
+              >
+                Save photo on device
+              </IonButton>
+            </>
         }
 
-        {/* MAP location selector */}
         <IonButton expand="block" onClick={() => setShowMap(true)}>
           Select location
         </IonButton>
         {location &&
             <div>
               Location: lat {location.lat}, lng {location.lng}
-              {/* Later: show map with marker here */}
             </div>
         }
-        <IonModal isOpen={showMap} swipeToClose>
+        <IonModal isOpen={showMap} swipeToClose onDidDismiss={() => setShowMap(false)}>
           <div style={{padding: 20, textAlign:'center'}}>
-            {/* Dummy Map: Replace with real map component */}
             <h4>Select a location</h4>
-            <IonButton onClick={() => handleSelectLocation(44.4268, 26.1025)}>
-              Bucharest Marker
-            </IonButton>
+            <MapPicker
+                value={location}
+                onSelect={loc => {
+                  setLocation(loc);
+                  setShowMap(false);
+                }}
+            />
             <IonButton onClick={() => setShowMap(false)}>Cancel</IonButton>
           </div>
         </IonModal>

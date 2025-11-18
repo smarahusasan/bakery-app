@@ -29,7 +29,7 @@ export const config={
     headers:{
         'Content-Type':'application/json'
     }
-}
+};
 
 export const authConfig=()=>({
     headers:{
@@ -37,3 +37,5 @@ export const authConfig=()=>({
         Authorization:`Bearer ${localStorage.getItem('token')}`
     }
 });
+
+import "leaflet/dist/leaflet.css";

@@ -10,7 +10,7 @@ interface ItemPropsExt extends ItemProps {
 const log = getLogger('Item');
 
 const Item: React.FC<ItemPropsExt> = ({ id, name,price,dateOfProduction,isGlutenFree,photo,photoPath, location, onEdit }) => {
-    log('Current item: ',id,name,price,dateOfProduction,isGlutenFree,photo,photoPath,location);
+    //log('Current item: ',id,name,price,dateOfProduction,isGlutenFree,photo,photoPath,location);
     return (
         <IonItem onClick={() => onEdit(id)}>
             <IonLabel>{id}</IonLabel>
