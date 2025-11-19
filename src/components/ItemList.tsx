@@ -90,6 +90,7 @@ const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
             <IonList>
               {visibleItems.map(item => (
                   <Item
+                      key={item.id}
                       id={item.id}
                       name={item.name}
                       price={item.price}
