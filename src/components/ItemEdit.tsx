@@ -1,5 +1,6 @@
 import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
 import {
+  createAnimation,
   IonButton,
   IonButtons,
   IonContent, IonDatetime,
@@ -63,11 +64,6 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
     });
   };
 
-  const handleSelectLocation = (lat: number, lng: number) => {
-    setLocation({lat, lng});
-    setShowMap(false);
-  };
-
   useEffect(() => {
     log('useEffect');
     const routeId = match.params.id || '';
@@ -97,6 +93,20 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
           });
     }
   }, [item, saveItem, name, price, dateOfProduction, isGlutenFree,photo,location, history]);
+
+  const spinInModal = (baseEl) => {
+    return createAnimation()
+        .addElement(baseEl)
+        .duration(600)
+        .fromTo('transform', 'rotateY(-180deg) scale(0.6)', 'rotateY(0deg) scale(1)');
+  };
+
+  const spinOutModal = (baseEl) => {
+    return createAnimation()
+        .addElement(baseEl)
+        .duration(600)
+        .fromTo('transform', 'rotateY(0deg) scale(1)', 'rotateY(180deg) scale(0.6)');
+  };
   log('render');
   return (
     <IonPage>
@@ -137,7 +147,8 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
           Take Photo
         </IonButton>
 
-        <IonModal isOpen={showWebcam} onDidDismiss={() => setShowWebcam(false)}>
+        <IonModal isOpen={showWebcam} onDidDismiss={() => setShowWebcam(false)} enterAnimation={spinInModal}
+                  leaveAnimation={spinOutModal}>
           <div style={{padding:20, textAlign:'center'}}>
             <Webcam
                 audio={false}
@@ -150,7 +161,7 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
               <IonButton color="medium" onClick={() => setShowWebcam(false)}>Cancel</IonButton>
             </div>
           </div>
-        </IonModal>
+        </IonModal >
         {photo &&
             <>
               <IonImg src={photo} />
